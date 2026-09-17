@@ -90,7 +90,13 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0b8QMFMZfbZ_heE51NgGYA_YV1EBf1m
         render();
         try {
             const { data, error } = mode === 'signup'
-                ? await client.auth.signUp(credentials)
+                ? await client.auth.signUp({
+                    ...credentials,
+                    options: {
+                        // Keep confirmation links inside the current GitHub Pages project path.
+                        emailRedirectTo: new URL('./', globalThis.location.href).href
+                    }
+                })
                 : await client.auth.signInWithPassword(credentials);
             if (error) throw error;
             session = data.session;
