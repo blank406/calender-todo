@@ -306,7 +306,7 @@ body { background: #f5f3ff; padding: 48px 32px; }
 #toggleAuthPassword[aria-pressed='true'] .password-eye-slash { display: inline; }
 #authPassword::-ms-reveal { display: none; }
 #authSubmitButton, #authLogoutButton { padding: 8px 14px; background: #8973bc; color: white; border: 0; border-radius: 2px; font-size: 12px; }
-#authModeButton { display: block; margin-top: 10px; color: #78638f; }
+#authModeButton, #authResendButton { display: block; margin-top: 10px; color: #78638f; }
 #authStatus { font-size: 12px; line-height: 1.6; margin-bottom: 0; overflow-wrap: anywhere; }
 #authStatus:empty { display: none; }
 #authStatus.auth-error { color: #ac5267; }

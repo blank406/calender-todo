@@ -34,6 +34,10 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0b8QMFMZfbZ_heE51NgGYA_YV1EBf1m
         el('authStatus').classList.toggle('auth-error', error);
     }
 
+    function emailRedirectUrl() {
+        return new URL('./', globalThis.location.href).href;
+    }
+
     function render() {
         if (!password.value) setPasswordVisible(false);
         const signedIn = !!session?.user;
@@ -80,6 +84,28 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0b8QMFMZfbZ_heE51NgGYA_YV1EBf1m
         el('authEmail').focus();
     });
 
+    el('authResendButton').addEventListener('click', async () => {
+        const emailInput = el('authEmail');
+        if (!ready || busy || session?.user || !emailInput.reportValidity()) return;
+        busy = true;
+        status('인증 메일을 요청하고 있습니다.');
+        render();
+        try {
+            const { error } = await client.auth.resend({
+                type: 'signup',
+                email: emailInput.value.trim(),
+                options: { emailRedirectTo: emailRedirectUrl() }
+            });
+            if (error) throw error;
+            status('가입 기록이 있는 미인증 계정이라면 새 인증 메일을 전송했습니다.');
+        } catch (error) {
+            status(errorMessage(error), true);
+        } finally {
+            busy = false;
+            render();
+        }
+    });
+
     form.addEventListener('submit', async event => {
         event.preventDefault();
         if (!ready || busy || session?.user || !form.reportValidity()) return;
@@ -94,7 +120,7 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0b8QMFMZfbZ_heE51NgGYA_YV1EBf1m
                     ...credentials,
                     options: {
                         // Keep confirmation links inside the current GitHub Pages project path.
-                        emailRedirectTo: new URL('./', globalThis.location.href).href
+                        emailRedirectTo: emailRedirectUrl()
                     }
                 })
                 : await client.auth.signInWithPassword(credentials);
