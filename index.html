@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Calendar Todo</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="app">
+
+        <button type="button" id="openSettingsButton" class="settings-button" aria-haspopup="dialog" aria-controls="settingsDialog">설정</button>
+        <button type="button" id="openAuthButton" class="auth-account-button" aria-haspopup="dialog" aria-controls="authDialog" disabled>로그인</button>
+
+        <nav class="month-navigation" aria-label="월 선택">
+            <div class="year-navigation">
+                <button type="button" id="prevYear" aria-label="이전 연도">‹</button>
+                <span id="navigationYear"></span>
+                <button type="button" id="nextYear" aria-label="다음 연도">›</button>
+            </div>
+            <div id="monthList"></div>
+            <span class="navigation-caption">CALENDAR / TODO</span>
+        </nav>
+
+        <!-- 왼쪽: 캘린더 -->
+        <section class="calendar-section">
+
+            <p class="section-eyebrow">나의 한 달</p>
+
+            <div class="calendar-header">
+                <button id="prevMonth">&lt;</button>
+
+                <h1 id="calendarTitle"></h1>
+
+                <button id="nextMonth">&gt;</button>
+            </div>
+
+            <div class="weekdays">
+                <div>일</div>
+                <div>월</div>
+                <div>화</div>
+                <div>수</div>
+                <div>목</div>
+                <div>금</div>
+                <div>토</div>
+            </div>
+
+            <div id="calendar" class="calendar"></div>
+
+            <div class="calendar-legend"><span class="legend-color"></span> 할 일이 있는 날 <span class="legend-completed">✓</span> 모두 완료</div>
+
+        </section>
+
+
+        <!-- 오른쪽: 선택한 날짜 -->
+    <section class="todo-section">
+
+        <p class="section-eyebrow">하루의 기록</p>
+
+        <div class="todo-header">
+            <h2 id="selectedDate"></h2>
+            <button type="button" id="deleteAllTodosButton" class="quiet-button" disabled aria-expanded="false" aria-controls="deleteAllTodosConfirm">전체 삭제</button>
+        </div>
+        <div id="deleteAllTodosConfirm" class="delete-all-confirm" role="group" aria-labelledby="deleteAllTodosMessage" hidden>
+            <p id="deleteAllTodosMessage"></p>
+            <button type="button" id="cancelDeleteAllTodosButton" class="quiet-button">취소</button>
+            <button type="button" id="confirmDeleteAllTodosButton" class="quiet-button">전체 삭제</button>
+        </div>
+
+        <div class="category-toolbar" aria-label="새 할 일의 카테고리 선택">
+            <div id="categoryList"></div>
+            <button type="button" id="manageCategoriesButton" class="quiet-button" aria-label="카테고리 관리" aria-haspopup="dialog">+</button>
+        </div>
+        <div class="category-sync-status">
+            <span id="categoryStatus" role="status" aria-live="polite">로그인하면 카테고리를 불러옵니다.</span>
+            <button type="button" id="retryCategoriesButton" class="quiet-button" hidden>다시 불러오기</button>
+        </div>
+
+        <div class="todo-input-wrap">
+            <input
+                type="text"
+                id="todoInput"
+                aria-label="할 일 입력"
+                placeholder="할 일을 입력하세요"
+            >
+            <button type="button" id="addTodoButton" aria-label="할 일 추가">+</button>
+        </div>
+
+        <div id="todoList" class="todo-list"></div>
+        <div class="todo-sync-status">
+            <span id="storageStatus" role="status" aria-live="polite" hidden></span>
+            <button type="button" id="retryTodosButton" class="quiet-button" hidden>다시 불러오기</button>
+        </div>
+
+    </section>
+
+    </main>
+
+    <dialog id="settingsDialog" aria-labelledby="settingsTitle">
+        <div class="settings-heading">
+            <h2 id="settingsTitle">설정</h2>
+            <button type="button" id="closeSettingsButton" class="quiet-button" aria-label="설정 닫기">×</button>
+        </div>
+        <label for="fontPreference">폰트</label>
+        <select id="fontPreference">
+            <option value="default">기본 폰트</option>
+            <option value="concon">온글잎 콘콘체</option>
+            <option value="positive">온글잎 긍정</option>
+        </select>
+        <p id="fontSettingsStatus" role="status" aria-live="polite"></p>
+    </dialog>
+
+    <div id="categoryDialog" class="category-section" popover role="dialog" aria-labelledby="categoryTitle">
+        <div class="category-dialog-header">
+            <h2 id="categoryTitle">카테고리 관리</h2>
+            <button type="button" id="closeCategoriesButton" aria-label="카테고리 관리 닫기">×</button>
+        </div>
+        <div id="categoryManagementList"></div>
+        <button type="button" id="addCategoryButton">+ 카테고리 추가</button>
+        <form id="categoryForm" hidden>
+            <fieldset id="categoryFields">
+            <label for="categoryName" id="categoryFormTitle">카테고리 추가</label>
+            <input id="categoryName" maxlength="30" required placeholder="카테고리 이름" autocomplete="off">
+            <div id="categoryPalette" role="group" aria-label="카테고리 색상"></div>
+            <p id="categoryError" role="alert"></p>
+            <div class="category-actions">
+                <button type="submit">저장</button>
+                <button type="button" id="cancelCategoryButton">취소</button>
+            </div>
+            <button type="button" id="deleteCategoryButton" class="danger">카테고리 삭제</button>
+            <div id="categoryDeleteConfirm" hidden>
+                <p>카테고리만 삭제됩니다. 해당 할 일은 분류 없이 유지됩니다.</p>
+                <button type="button" id="confirmDeleteCategoryButton" class="danger">삭제 확인</button>
+                <button type="button" id="cancelDeleteCategoryButton">취소</button>
+            </div>
+            </fieldset>
+        </form>
+    </div>
+
+    <div id="todoMenu" class="todo-menu" popover>
+        <button type="button" id="openMoveTodoButton">다른 날로 옮기기</button>
+        <button type="button" id="deleteMenuTodoButton" class="danger">삭제</button>
+    </div>
+
+    <dialog id="moveTodoDialog" aria-labelledby="moveTodoTitle">
+        <h2 id="moveTodoTitle">다른 날로 옮기기</h2>
+        <p id="moveTodoText"></p>
+        <div class="calendar-header">
+            <button type="button" id="movePrevMonth" aria-label="이동 달력 이전 달">&lt;</button>
+            <h3 id="moveMonthTitle" aria-live="polite"></h3>
+            <button type="button" id="moveNextMonth" aria-label="이동 달력 다음 달">&gt;</button>
+        </div>
+        <div class="weekdays" aria-hidden="true">
+            <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div id="moveCalendar" class="calendar" aria-label="이동할 날짜"></div>
+        <p id="moveDateSummary" aria-live="polite"></p>
+        <div class="move-actions">
+            <button type="button" id="cancelMoveTodoButton" class="quiet-button">취소</button>
+            <button type="button" id="confirmMoveTodoButton" disabled>이동</button>
+        </div>
+    </dialog>
+
+    <dialog id="authDialog" aria-labelledby="authTitle">
+        <div class="auth-heading">
+            <h2 id="authTitle">로그인</h2>
+            <button type="button" id="closeAuthButton" class="quiet-button" aria-label="계정 창 닫기">×</button>
+        </div>
+        <p class="auth-note">카테고리는 내 계정에 저장됩니다. 할 일은 이 브라우저에만 저장되며, 아직 계정별 분리와 기기 간 동기화는 제공하지 않습니다.</p>
+        <form id="authForm">
+            <fieldset id="authFields" disabled>
+                <label for="authEmail">이메일</label>
+                <input id="authEmail" type="email" autocomplete="email" required>
+                <label for="authPassword">비밀번호</label>
+                <div class="auth-password-wrap">
+                    <input id="authPassword" type="password" autocomplete="current-password" required>
+                    <button type="button" id="toggleAuthPassword" aria-label="비밀번호 보기" aria-controls="authPassword" aria-pressed="false" title="비밀번호 보기">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                            <path class="password-eye-slash" d="m3 3 18 18"/>
+                        </svg>
+                    </button>
+                </div>
+                <button type="submit" id="authSubmitButton">로그인</button>
+                <button type="button" id="authModeButton" class="quiet-button">회원가입으로 전환</button>
+            </fieldset>
+        </form>
+        <div id="authSignedIn" hidden>
+            <p id="authUserEmail"></p>
+            <button type="button" id="authLogoutButton">로그아웃</button>
+        </div>
+        <p id="authStatus" role="status" aria-live="polite">인증 연결을 준비하고 있습니다.</p>
+    </dialog>
+
+    <script src="script.js"></script>
+    <script src="font-settings.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase.js"></script>
+
+</body>
+</html>
