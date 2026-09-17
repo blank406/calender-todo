@@ -157,35 +157,35 @@ button:disabled { cursor: default; opacity: .45; }
 
 /* Reference composition: a narrow month rail and an uninterrupted white workspace. */
 body { background: #f5f3ff; padding: 48px 32px; }
-.app { position: relative; width: min(1040px, 100%); height: 604px; min-height: 540px; max-height: calc(100dvh - 96px); grid-template-columns: 14% 51% 35%; border: 1px solid #eeeaf7; border-radius: 0; box-shadow: 0 12px 24px #7660b51a; }
+.app { position: relative; width: min(1400px, 92vw); height: 700px; min-height: 600px; max-height: calc(100dvh - 96px); grid-template-columns: 14% 51% 35%; border: 1px solid #eeeaf7; border-radius: 0; box-shadow: 0 12px 24px #7660b51a; }
 .month-navigation { background: #8973bc; border-right: 1px solid #806bb2; padding: 22px 0 64px; }
 .year-navigation { padding: 0 17px; margin-bottom: 20px; }
-.year-navigation span { font-size: 14px; font-weight: 400; letter-spacing: 0; }
+.year-navigation span { font-size: 16px; font-weight: 400; letter-spacing: 0; }
 .year-navigation button { font-size: 19px; color: #d9cdec; }
-.month-button { padding: 0 24px; font-size: 11px; color: #eee8f8; }
+.month-button { padding: 0 24px; font-size: 12px; color: #eee8f8; }
 .month-button[aria-pressed='true'] { background: #7960aa; box-shadow: none; font-weight: 400; }
-.month-count { font-size: 9px; }
+.month-count { font-size: 10px; }
 .navigation-caption, .section-eyebrow, .calendar-legend { display: none; }
-.calendar-section { padding: 64px 32px 46px; background: #fdfdfd; }
+.calendar-section { padding: 72px 42px 54px; background: #fdfdfd; }
 .calendar-section > .calendar-header { margin-bottom: 22px; min-height: 28px; position: relative; justify-content: center; }
-.calendar-header h1 { font-size: 18px; font-weight: 400; letter-spacing: .3px; color: #8f8a95; }
+.calendar-header h1 { font-size: 20px; font-weight: 400; letter-spacing: .3px; color: #8f8a95; }
 #prevMonth { position: absolute; left: 0; font-size: 18px; color: #bbb3c5; }
 /* Keep month navigation at the calendar edge and category management at the app edge. */
 .calendar-section > .calendar-header { position: static; }
-#prevMonth { left: calc(14% + 22px); top: 64px; }
+#prevMonth { left: calc(14% + 32px); top: 72px; }
 #nextMonth { position: absolute; left: calc(65% - 44px); right: auto; top: 0; width: 44px; height: 44px; border-radius: 0; background: #8973bc; color: #f3ecfc; font-size: 25px; font-weight: 300; }
 #nextMonth:hover { background: #7960aa; }
-.weekdays { font-size: 11px; color: #aaa5af; margin-bottom: 24px; }
+.weekdays { font-size: 12px; color: #aaa5af; margin-bottom: 24px; }
 #calendar { row-gap: 26px; column-gap: 5px; }
-#calendar .date { width: 36px; height: 36px; font-size: 12px; color: #96909d; }
+#calendar .date { width: 36px; height: 36px; font-size: 13px; color: #96909d; }
 .date.has-todos { background: color-mix(in srgb, var(--indicator-color) 36%, white); }
 #calendar .date.has-todos { color: #fff; }
 .date.selected { outline: 1px solid #a08bcb; outline-offset: 3px; }
 .date.all-completed { background: color-mix(in srgb, var(--indicator-color) 14%, white); }
 #calendar .date.all-completed { color: #aaa3b3; }
-.todo-section { position: static; padding: 66px 28px 52px 26px; border-left: 1px solid #f3f0f7; background: #fff; }
+.todo-section { position: static; padding: 72px 36px 58px 34px; border-left: 1px solid #f3f0f7; background: #fff; }
 .todo-header { min-height: 26px; }
-.todo-header h2 { font-size: 14px; font-weight: 400; letter-spacing: 0; color: #96909f; }
+.todo-header h2 { font-size: 16px; font-weight: 400; letter-spacing: 0; color: #96909f; }
 #deleteAllTodosButton { position: absolute; bottom: 0; right: 0; border-radius: 0; min-width: 88px; height: 34px; background: #8973bc; color: #fff; padding: 7px 16px; font-size: 11px; }
 #deleteAllTodosButton:disabled { opacity: .5; }
 #deleteAllTodosButton:hover:not(:disabled) { background: #7960aa; color: white; }
@@ -198,12 +198,12 @@ body { background: #f5f3ff; padding: 48px 32px; }
 #manageCategoriesButton { position: absolute; top: 0; right: 0; left: auto; width: 44px; height: 44px; margin: 0; background: #8973bc; color: #f3ecfc; border-radius: 0; font-size: 30px; font-weight: 200; line-height: 44px; }
 #manageCategoriesButton:hover { background: #7960aa; color: white; }
 .todo-input-wrap { gap: 0; margin: 16px 0 18px; border-bottom: 1px solid #eee9f3; }
-.todo-input-wrap input { height: 30px; background: transparent; border: 0; border-radius: 0; padding: 5px 0; font-size: 11px; }
+.todo-input-wrap input { height: 30px; background: transparent; border: 0; border-radius: 0; padding: 5px 0; font-size: 12px; }
 .todo-input-wrap button { width: 30px; height: 30px; background: transparent; color: #9984ba; font-size: 21px; border-radius: 0; }
 .todo-list { padding: 0 0 0 5px; }
 .todo-item { position: relative; border-bottom: 0; border-left: 1px solid #f1edf6; margin-left: 4px; padding: 12px 0 12px 19px; min-height: 54px; gap: 7px; }
 .todo-item > .category-dot { position: absolute; left: -5px; top: 22px; width: 8px; height: 8px; box-shadow: 0 0 0 3px white; opacity: .6; }
-.todo-text { order: 1; color: #96909f; font-size: 11px; line-height: 1.7; }
+.todo-text { order: 1; color: #96909f; font-size: 12px; line-height: 1.7; }
 .todo-checkbox { order: 2; margin-left: auto; width: 13px; height: 13px; border-color: #e9e3ef; color: #9b89b5; }
 .todo-more { order: 3; margin-left: 0; width: 21px; font-size: 16px; color: #a999ba; }
 .todo-text.completed { color: #c1bac8; }
@@ -321,7 +321,7 @@ body { background: #f5f3ff; padding: 48px 32px; }
 #categoryFields { border: 0; padding: 0; margin: 0; min-width: 0; }
 #categoryFields:disabled { opacity: .65; }
 html[data-app-font='concon'] .todo-text,
-html[data-app-font='positive'] .todo-text { font-size: 12px; }
+html[data-app-font='positive'] .todo-text { font-size: 13px; }
 html[data-app-font='positive'] .todo-text { font-size: 16px; }
 @media (max-width: 650px) {
     html[data-app-font='concon'] .todo-text,
