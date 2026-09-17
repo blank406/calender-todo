@@ -157,7 +157,7 @@ button:disabled { cursor: default; opacity: .45; }
 
 /* Reference composition: a narrow month rail and an uninterrupted white workspace. */
 body { background: #f5f3ff; padding: 48px 32px; }
-.app { position: relative; width: min(1400px, 92vw); height: 700px; min-height: 600px; max-height: calc(100dvh - 96px); grid-template-columns: 14% 51% 35%; border: 1px solid #eeeaf7; border-radius: 0; box-shadow: 0 12px 24px #7660b51a; }
+.app { position: relative; width: min(1400px, 92vw); height: 700px; min-height: 600px; max-height: calc(100dvh - 96px); grid-template-columns: 14% 49% 37%; border: 1px solid #eeeaf7; border-radius: 0; box-shadow: 0 12px 24px #7660b51a; }
 .month-navigation { background: #8973bc; border-right: 1px solid #806bb2; padding: 22px 0 64px; }
 .year-navigation { padding: 0 17px; margin-bottom: 20px; }
 .year-navigation span { font-size: 16px; font-weight: 400; letter-spacing: 0; }
@@ -173,7 +173,7 @@ body { background: #f5f3ff; padding: 48px 32px; }
 /* Keep month navigation at the calendar edge and category management at the app edge. */
 .calendar-section > .calendar-header { position: static; }
 #prevMonth { left: calc(14% + 32px); top: 72px; }
-#nextMonth { position: absolute; left: calc(65% - 44px); right: auto; top: 0; width: 44px; height: 44px; border-radius: 0; background: #8973bc; color: #f3ecfc; font-size: 25px; font-weight: 300; }
+#nextMonth { position: absolute; left: calc(63% - 44px); right: auto; top: 0; width: 44px; height: 44px; border-radius: 0; background: #8973bc; color: #f3ecfc; font-size: 25px; font-weight: 300; }
 #nextMonth:hover { background: #7960aa; }
 .weekdays { font-size: 12px; color: #aaa5af; margin-bottom: 24px; }
 #calendar { row-gap: 26px; column-gap: 5px; }
@@ -327,4 +327,13 @@ html[data-app-font='positive'] .todo-text { font-size: 16px; }
     html[data-app-font='concon'] .todo-text,
     html[data-app-font='positive'] .todo-text { font-size: 13px; }
     html[data-app-font='positive'] .todo-text { font-size: 15px; }
+}
+@media (min-width: 651px) {
+    .todo-header h2 { font-size: 17px; }
+    .category-filter { font-size: 11px; }
+    .category-count { font-size: 10px; }
+    .todo-input-wrap input { font-size: 13px; }
+    .todo-text { font-size: 13px; }
+    html[data-app-font='concon'] .todo-text { font-size: 14px; }
+    html[data-app-font='positive'] .todo-text { font-size: 17px; }
 }
