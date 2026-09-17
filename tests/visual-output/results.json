@@ -1,0 +1,56 @@
+[
+  {
+    "width": 1920,
+    "height": 1080,
+    "overflow": false,
+    "calendarFits": true,
+    "inputFits": true,
+    "sidebar": true,
+    "days": 31
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "calendarFits": true,
+    "inputFits": true,
+    "sidebar": true,
+    "days": 31
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "overflow": false,
+    "calendarFits": true,
+    "inputFits": true,
+    "sidebar": true,
+    "days": 31
+  },
+  {
+    "width": 1000,
+    "height": 800,
+    "overflow": false,
+    "calendarFits": true,
+    "inputFits": true,
+    "sidebar": false,
+    "days": 31
+  },
+  {
+    "width": 900,
+    "height": 700,
+    "overflow": false,
+    "calendarFits": true,
+    "inputFits": true,
+    "sidebar": false,
+    "days": 31
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "calendarFits": true,
+    "inputFits": true,
+    "sidebar": false,
+    "days": 31
+  }
+]
