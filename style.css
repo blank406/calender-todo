@@ -191,10 +191,10 @@ body { background: #f5f3ff; padding: 48px 32px; }
 #deleteAllTodosButton:hover:not(:disabled) { background: #7960aa; color: white; }
 .category-toolbar { margin-top: 12px; gap: 0; }
 #categoryList { padding: 0; gap: 2px; }
-.category-filter { padding: 4px 5px; font-size: 9px; gap: 4px; border-bottom-width: 1px; }
+.category-filter { padding: 4px 5px; font-size: 10px; gap: 4px; border-bottom-width: 1px; }
 .category-row.active { background: transparent; }
 .category-row + .category-row { border-left: 0; }
-.category-count { font-size: 8px; }
+.category-count { font-size: 9px; }
 #manageCategoriesButton { position: absolute; top: 0; right: 0; left: auto; width: 44px; height: 44px; margin: 0; background: #8973bc; color: #f3ecfc; border-radius: 0; font-size: 30px; font-weight: 200; line-height: 44px; }
 #manageCategoriesButton:hover { background: #7960aa; color: white; }
 .todo-input-wrap { gap: 0; margin: 16px 0 18px; border-bottom: 1px solid #eee9f3; }
@@ -225,7 +225,7 @@ body { background: #f5f3ff; padding: 48px 32px; }
     #calendar { row-gap: 16px; }
     .todo-section { padding: 25px 24px 55px; min-height: 340px; border-left: 0; border-top: 1px solid var(--line); }
     .todo-header h2 { font-size: 15px; }
-    .category-filter { font-size: 11px; padding: 5px 7px; }
+    .category-filter { font-size: 12px; padding: 5px 7px; }
     .todo-input-wrap input, .todo-text { font-size: 12px; }
     .todo-list { max-height: 420px; }
 }
