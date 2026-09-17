@@ -586,13 +586,42 @@ todoInput.addEventListener('keydown', event => {
         addTodo();
     }
 });
-for (const [id, offset] of [['prevMonth', -1], ['nextMonth', 1]]) byId(id).addEventListener('click', () => {
+function moveCurrentMonth(offset) {
     const date = new Date(currentYear, currentMonth + offset, 1);
     currentYear = date.getFullYear();
     currentMonth = date.getMonth();
     cancelBulkDelete();
     renderCalendar();
-});
+}
+for (const [id, offset] of [['prevMonth', -1], ['nextMonth', 1]]) {
+    byId(id).addEventListener('click', () => moveCurrentMonth(offset));
+}
+
+let calendarTouchStart = null;
+const isMobileCalendarTouch = () => typeof matchMedia === 'function' &&
+    matchMedia('(max-width: 650px) and (pointer: coarse)').matches;
+byId('calendarPanel').addEventListener('touchstart', event => {
+    if (!isMobileCalendarTouch() || event.touches.length !== 1) {
+        calendarTouchStart = null;
+        return;
+    }
+    const touch = event.touches[0];
+    calendarTouchStart = { x: touch.clientX, y: touch.clientY };
+}, { passive: true });
+byId('calendarPanel').addEventListener('touchend', event => {
+    if (!calendarTouchStart || !isMobileCalendarTouch() || event.changedTouches.length !== 1) {
+        calendarTouchStart = null;
+        return;
+    }
+    const start = calendarTouchStart;
+    calendarTouchStart = null;
+    const touch = event.changedTouches[0];
+    const horizontal = touch.clientX - start.x;
+    const vertical = touch.clientY - start.y;
+    if (Math.abs(horizontal) < 50 || Math.abs(horizontal) <= Math.abs(vertical)) return;
+    moveCurrentMonth(horizontal < 0 ? 1 : -1);
+}, { passive: true });
+byId('calendarPanel').addEventListener('touchcancel', () => { calendarTouchStart = null; }, { passive: true });
 byId('deleteAllTodosButton').addEventListener('click', () => {
     if (!categoryUserId) return;
     const key = formatDateKey(selectedDate);
