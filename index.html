@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#7564d8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Todo">
 
     <title>Calendar Todo</title>
 
-    <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
-    <link rel="apple-touch-icon" href="assets/calendar-icon.png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon.png">
+    <link rel="apple-touch-icon" href="./assets/icon-192.png">
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
@@ -199,10 +204,11 @@
         <p id="authStatus" role="status" aria-live="polite">인증 연결을 준비하고 있습니다.</p>
     </dialog>
 
-    <script src="script.js"></script>
-    <script src="font-settings.js"></script>
+    <script src="./script.js"></script>
+    <script src="./font-settings.js"></script>
+    <script src="./pwa.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script defer src="supabase.js"></script>
+    <script defer src="./supabase.js"></script>
 
 </body>
 </html>
