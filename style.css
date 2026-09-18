@@ -137,8 +137,14 @@ button:disabled { cursor: default; opacity: .45; }
 #moveCalendar { gap: 8px 3px; }
 #moveCalendar .date { width: 30px; height: 30px; }
 @media (min-width: 651px) {
-    #moveTodoDialog { width: 420px; }
-    #moveCalendar { gap: 10px 6px; }
+    #moveTodoDialog { width: 420px; padding: 16px 24px; }
+    #moveTodoDialog .calendar-header { margin-bottom: 8px; }
+    #moveTodoDialog .weekdays { margin-bottom: 10px; }
+    #moveTodoDialog #moveTodoText { margin: 8px 0; }
+    #moveTodoDialog #moveMonthTitle { margin: 0; }
+    #moveTodoDialog #moveDateSummary { margin: 10px 0; }
+    #moveTodoDialog #moveTodoError:empty { display: none; }
+    #moveCalendar { gap: 4px 6px; }
     #moveCalendar .date { width: 44px; height: 44px; }
 }
 #moveDateSummary { font-size: 11px; color: var(--muted); margin-top: 20px; }
