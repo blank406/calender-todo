@@ -136,6 +136,11 @@ button:disabled { cursor: default; opacity: .45; }
 #moveMonthTitle { font-size: 14px; font-weight: 500; }
 #moveCalendar { gap: 8px 3px; }
 #moveCalendar .date { width: 30px; height: 30px; }
+@media (min-width: 651px) {
+    #moveTodoDialog { width: 420px; }
+    #moveCalendar { gap: 10px 6px; }
+    #moveCalendar .date { width: 44px; height: 44px; }
+}
 #moveDateSummary { font-size: 11px; color: var(--muted); margin-top: 20px; }
 .move-actions { display: flex; justify-content: flex-end; gap: 8px; }
 #confirmMoveTodoButton { padding: 7px 14px; border: 0; border-radius: 2px; background: var(--accent); color: white; font-size: 12px; }
