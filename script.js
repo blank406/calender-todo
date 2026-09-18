@@ -17,6 +17,7 @@ let editingCategoryId = null;
 let selectedColor = COLORS[0];
 let pendingDeleteDate = null;
 let movingTodo = null;
+let editingTodo = null;
 let movingSource = null;
 let moveDate = null;
 let moveMonth = new Date();
@@ -59,6 +60,11 @@ function renderTodoAccess() {
     byId('confirmDeleteAllTodosButton').disabled = locked;
     byId('deleteMenuTodoButton').disabled = locked;
     byId('openMoveTodoButton').disabled = locked;
+    byId('openEditTodoButton').disabled = locked;
+    byId('editTodoInput').disabled = locked;
+    byId('saveEditTodoButton').disabled = locked;
+    byId('cancelEditTodoButton').disabled = todoBusy;
+    byId('editTodoForm').setAttribute('aria-busy', String(todoBusy));
     byId('confirmMoveTodoButton').disabled = locked || !moveDate || formatDateKey(moveDate) === movingSource;
 }
 
@@ -179,6 +185,7 @@ globalThis.calendarCategoryController = {
         closeCategoryForm();
         cancelBulkDelete();
         closeTodoMenu();
+        closeTodoEditor();
         byId('categoryDialog').hidePopover();
         byId('moveTodoDialog').close();
         byId('moveTodoText').textContent = '';
@@ -339,7 +346,7 @@ function renderTodos() {
         label.classList.toggle('completed', todo.completed);
         row.append(check, categoryDot(categories.find(c => c.id === todo.categoryId)), label,
             button('todo-more', '⋯', event => {
-                if (!categoryUserId || todoBusy || !todos[key]?.includes(todo)) return;
+                if (!categoryUserId || todoBusy || editingTodo || !todos[key]?.includes(todo)) return;
                 movingTodo = todo;
                 movingSource = key;
                 const menu = byId('todoMenu');
@@ -446,6 +453,64 @@ async function deleteTodo(key, todo) {
         removeTodo(key, todo);
     });
 }
+function closeTodoEditor() {
+    editingTodo = null;
+    byId('editTodoDialog').close();
+    byId('editTodoInput').value = '';
+    byId('editTodoError').textContent = '';
+}
+byId('openEditTodoButton').addEventListener('click', () => {
+    if (!categoryUserId || !todoReady || todoLoading || todoBusy || editingTodo ||
+        !movingTodo || movingTodo.user_id !== categoryUserId || !todos[movingSource]?.includes(movingTodo)) return;
+    editingTodo = { todo: movingTodo, source: movingSource };
+    closeTodoMenu();
+    movingTodo = null;
+    movingSource = null;
+    cancelBulkDelete();
+    byId('editTodoInput').value = editingTodo.todo.text;
+    byId('editTodoError').textContent = '';
+    byId('editTodoDialog').showModal();
+    byId('editTodoInput').focus();
+});
+byId('cancelEditTodoButton').addEventListener('click', () => {
+    if (!todoBusy) closeTodoEditor();
+});
+byId('editTodoDialog').addEventListener('cancel', event => {
+    event.preventDefault();
+    if (!todoBusy) closeTodoEditor();
+});
+byId('editTodoInput').addEventListener('keydown', event => {
+    if (event.key === 'Enter' && (event.isComposing || event.keyCode === 229)) event.preventDefault();
+});
+byId('editTodoForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!categoryUserId || !todoReady || todoLoading || todoBusy || !editingTodo) return;
+    const editor = editingTodo;
+    const { todo, source } = editor;
+    if (todo.user_id !== categoryUserId || !todos[source]?.includes(todo)) return;
+    const text = byId('editTodoInput').value.trim();
+    if (!text) {
+        byId('editTodoError').textContent = '할 일 내용을 입력해주세요.';
+        byId('editTodoInput').focus();
+        return;
+    }
+    if (text === todo.text) { closeTodoEditor(); return; }
+    byId('editTodoError').textContent = '';
+    const succeeded = await runTodoMutation('할 일을 수정하는 중…', async (userId, version) => {
+        const { data, error } = await categoryClient.from('todos').update({ text })
+            .eq('id', todo.id).eq('user_id', userId).select('id,user_id,text').single();
+        if (version !== categoryVersion) return;
+        if (error) throw error;
+        if (!data || data.id !== todo.id || data.user_id !== userId || data.text !== text) {
+            throw new Error('Invalid todo update');
+        }
+        todo.text = data.text;
+    });
+    if (editingTodo !== editor) return;
+    if (succeeded) closeTodoEditor();
+    else byId('editTodoError').textContent = byId('storageStatus').textContent;
+});
+
 function renderPalette() {
     byId('categoryPalette').replaceChildren();
     for (const color of [...new Set([...COLORS, selectedColor])]) {

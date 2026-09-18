@@ -149,9 +149,23 @@
     </div>
 
     <div id="todoMenu" class="todo-menu" popover>
+        <button type="button" id="openEditTodoButton">할 일 수정</button>
         <button type="button" id="openMoveTodoButton">다른 날로 옮기기</button>
         <button type="button" id="deleteMenuTodoButton" class="danger">삭제</button>
     </div>
+
+    <dialog id="editTodoDialog" aria-labelledby="editTodoTitle">
+        <form id="editTodoForm">
+            <h2 id="editTodoTitle">할 일 수정</h2>
+            <label for="editTodoInput">할 일 내용</label>
+            <input id="editTodoInput" type="text" autocomplete="off" aria-describedby="editTodoError">
+            <p id="editTodoError" role="alert"></p>
+            <div class="move-actions">
+                <button type="button" id="cancelEditTodoButton" class="quiet-button">취소</button>
+                <button type="submit" id="saveEditTodoButton">저장</button>
+            </div>
+        </form>
+    </dialog>
 
     <dialog id="moveTodoDialog" aria-labelledby="moveTodoTitle">
         <h2 id="moveTodoTitle">다른 날로 옮기기</h2>
