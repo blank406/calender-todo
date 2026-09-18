@@ -127,6 +127,9 @@ button:disabled { cursor: default; opacity: .45; }
 .todo-menu .danger { color: #b87583; }
 #moveTodoDialog { width: min(330px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); padding: 24px; overflow-y: auto; }
 #moveTodoDialog::backdrop { background: #30234029; }
+#moveTodoError { color: #b44560; font-size: 13px; }
+#moveTodoDialog .move-actions button, #moveTodoDialog .calendar-header button { min-width: 44px; min-height: 44px; }
+#moveCalendar .date { min-height: 44px; }
 #moveTodoTitle { margin: 0; font-size: 16px; font-weight: 500; }
 #moveTodoText { font-size: 12px; color: var(--muted); max-height: 60px; overflow-y: auto; overflow-wrap: anywhere; }
 #moveTodoDialog .calendar-header { margin-bottom: 16px; }

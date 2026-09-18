@@ -151,6 +151,7 @@
     <div id="todoMenu" class="todo-menu" popover>
         <button type="button" id="openEditTodoButton">할 일 수정</button>
         <button type="button" id="openMoveTodoButton">다른 날로 옮기기</button>
+        <button type="button" id="openCopyTodoButton">다른 날짜로 복사</button>
         <button type="button" id="deleteMenuTodoButton" class="danger">삭제</button>
     </div>
 
@@ -180,6 +181,7 @@
         </div>
         <div id="moveCalendar" class="calendar" aria-label="이동할 날짜"></div>
         <p id="moveDateSummary" aria-live="polite"></p>
+        <p id="moveTodoError" role="alert"></p>
         <div class="move-actions">
             <button type="button" id="cancelMoveTodoButton" class="quiet-button">취소</button>
             <button type="button" id="confirmMoveTodoButton" disabled>이동</button>

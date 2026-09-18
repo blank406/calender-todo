@@ -20,6 +20,7 @@ let movingTodo = null;
 let editingTodo = null;
 let movingSource = null;
 let moveDate = null;
+let todoDateAction = 'move';
 let moveMonth = new Date();
 let categoryClient = null;
 let categoryUserId = null;
@@ -60,12 +61,15 @@ function renderTodoAccess() {
     byId('confirmDeleteAllTodosButton').disabled = locked;
     byId('deleteMenuTodoButton').disabled = locked;
     byId('openMoveTodoButton').disabled = locked;
+    byId('openCopyTodoButton').disabled = locked;
     byId('openEditTodoButton').disabled = locked;
     byId('editTodoInput').disabled = locked;
     byId('saveEditTodoButton').disabled = locked;
     byId('cancelEditTodoButton').disabled = todoBusy;
     byId('editTodoForm').setAttribute('aria-busy', String(todoBusy));
-    byId('confirmMoveTodoButton').disabled = locked || !moveDate || formatDateKey(moveDate) === movingSource;
+    byId('confirmMoveTodoButton').disabled = locked || !moveDate || (todoDateAction === 'move' && formatDateKey(moveDate) === movingSource);
+    byId('cancelMoveTodoButton').disabled = todoBusy;
+    byId('moveTodoDialog').setAttribute('aria-busy', String(todoBusy));
 }
 
 function refreshCategoryUI() {
@@ -189,6 +193,7 @@ globalThis.calendarCategoryController = {
         byId('categoryDialog').hidePopover();
         byId('moveTodoDialog').close();
         byId('moveTodoText').textContent = '';
+        byId('moveTodoError').textContent = '';
         byId('moveCalendar').replaceChildren();
         movingTodo = null;
         movingSource = null;
@@ -722,30 +727,66 @@ function renderMoveCalendar() {
     const month = moveMonth.getMonth();
     byId('moveMonthTitle').textContent = `${year}년 ${month + 1}월`;
     buildCalendar(byId('moveCalendar'), year, month, moveDate, date => { moveDate = date; renderMoveCalendar(); });
-    byId('confirmMoveTodoButton').disabled = todoBusy || !moveDate || formatDateKey(moveDate) === movingSource;
-    byId('moveDateSummary').textContent = moveDate ? `${moveDate.getFullYear()}년 ${moveDate.getMonth() + 1}월 ${moveDate.getDate()}일` : '이동할 날짜를 선택하세요.';
+    renderTodoAccess();
+    byId('moveDateSummary').textContent = moveDate ? `${moveDate.getFullYear()}년 ${moveDate.getMonth() + 1}월 ${moveDate.getDate()}일` : `${todoDateAction === 'copy' ? '복사' : '이동'}할 날짜를 선택하세요.`;
 }
-byId('openMoveTodoButton').addEventListener('click', () => {
-    if (!categoryUserId || !movingTodo || !todos[movingSource]?.includes(movingTodo)) return;
+function openTodoDateDialog(action) {
+    if (!categoryUserId || !todoReady || todoLoading || todoBusy || editingTodo || !movingTodo ||
+        movingTodo.user_id !== categoryUserId || !todos[movingSource]?.includes(movingTodo)) return;
+    todoDateAction = action;
     byId('todoMenu').hidePopover();
     moveDate = null;
     moveMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    byId('moveTodoTitle').textContent = action === 'copy' ? '다른 날짜로 복사' : '다른 날로 옮기기';
+    byId('confirmMoveTodoButton').textContent = action === 'copy' ? '복사' : '이동';
+    byId('moveCalendar').setAttribute('aria-label', action === 'copy' ? '복사할 날짜' : '이동할 날짜');
+    byId('moveTodoError').textContent = '';
     byId('moveTodoText').textContent = movingTodo.text;
     renderMoveCalendar();
     byId('moveTodoDialog').showModal();
-});
+}
+byId('openMoveTodoButton').addEventListener('click', () => openTodoDateDialog('move'));
+byId('openCopyTodoButton').addEventListener('click', () => openTodoDateDialog('copy'));
 for (const [id, offset] of [['movePrevMonth', -1], ['moveNextMonth', 1]]) byId(id).addEventListener('click', () => {
     moveMonth = new Date(moveMonth.getFullYear(), moveMonth.getMonth() + offset, 1);
     renderMoveCalendar();
 });
-byId('cancelMoveTodoButton').addEventListener('click', () => byId('moveTodoDialog').close());
+byId('cancelMoveTodoButton').addEventListener('click', () => {
+    if (!todoBusy) byId('moveTodoDialog').close();
+});
+byId('moveTodoDialog').addEventListener('cancel', event => {
+    if (todoBusy) event.preventDefault();
+});
 byId('moveTodoDialog').addEventListener('close', () => { movingTodo = null; movingSource = null; moveDate = null; });
 byId('confirmMoveTodoButton').addEventListener('click', async () => {
     if (!categoryUserId || todoBusy || !movingTodo || !moveDate) return;
     const todo = movingTodo;
     const source = movingSource;
     const destination = formatDateKey(moveDate);
-    if (destination === source || !todos[source]?.includes(todo) || !todo.id) return;
+    const version = categoryVersion;
+    if ((todoDateAction === 'move' && destination === source) || !todos[source]?.includes(todo) || !todo.id || todo.user_id !== categoryUserId) return;
+    byId('moveTodoError').textContent = '';
+    if (todoDateAction === 'copy') {
+        const succeeded = await runTodoMutation('할 일을 복사하는 중…', async (userId, version) => {
+            const { data, error } = await categoryClient.from('todos').insert({
+                text: todo.text,
+                category_id: todo.categoryId,
+                completed: todo.completed,
+                todo_date: destination,
+                user_id: userId
+            }).select(TODO_COLUMNS).single();
+            if (version !== categoryVersion) return;
+            if (error) throw error;
+            if (!data || !data.id || data.id === todo.id || data.user_id !== userId || data.todo_date !== destination) {
+                throw new Error('Invalid copied todo');
+            }
+            (todos[destination] ||= []).push(todoFromRow(data));
+        });
+        if (version !== categoryVersion) return;
+        if (succeeded) byId('moveTodoDialog').close();
+        else byId('moveTodoError').textContent = byId('storageStatus').textContent;
+        return;
+    }
     const succeeded = await runTodoMutation('할 일 날짜를 변경하는 중…', async (userId, version) => {
         const { data, error } = await categoryClient.from('todos').update({ todo_date: destination })
             .eq('id', todo.id).eq('user_id', userId).select(TODO_COLUMNS).single();
@@ -759,6 +800,7 @@ byId('confirmMoveTodoButton').addEventListener('click', async () => {
         (todos[destination] ||= []).push(todo);
     });
     if (succeeded) byId('moveTodoDialog').close();
+    else if (version === categoryVersion) byId('moveTodoError').textContent = byId('storageStatus').textContent;
 });
 showSelectedDate();
 renderCalendar();
