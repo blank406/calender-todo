@@ -128,25 +128,16 @@ button:disabled { cursor: default; opacity: .45; }
 #moveTodoDialog { width: min(330px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); padding: 24px; overflow-y: auto; }
 #moveTodoDialog::backdrop { background: #30234029; }
 #moveTodoError { color: #b44560; font-size: 13px; }
-#moveTodoDialog .move-actions button, #moveTodoDialog .calendar-header button { min-width: 44px; min-height: 44px; }
-#moveCalendar .date { min-height: 44px; }
+#moveTodoError:empty { display: none; }
+@media (max-width: 650px) {
+    #moveTodoDialog .move-actions button, #moveTodoDialog .calendar-header button { min-width: 44px; min-height: 44px; }
+}
 #moveTodoTitle { margin: 0; font-size: 16px; font-weight: 500; }
 #moveTodoText { font-size: 12px; color: var(--muted); max-height: 60px; overflow-y: auto; overflow-wrap: anywhere; }
 #moveTodoDialog .calendar-header { margin-bottom: 16px; }
 #moveMonthTitle { font-size: 14px; font-weight: 500; }
 #moveCalendar { gap: 8px 3px; }
 #moveCalendar .date { width: 30px; height: 30px; }
-@media (min-width: 651px) {
-    #moveTodoDialog { width: 420px; padding: 16px 24px; }
-    #moveTodoDialog .calendar-header { margin-bottom: 8px; }
-    #moveTodoDialog .weekdays { margin-bottom: 10px; }
-    #moveTodoDialog #moveTodoText { margin: 8px 0; }
-    #moveTodoDialog #moveMonthTitle { margin: 0; }
-    #moveTodoDialog #moveDateSummary { margin: 10px 0; }
-    #moveTodoDialog #moveTodoError:empty { display: none; }
-    #moveCalendar { gap: 4px 6px; }
-    #moveCalendar .date { width: 44px; height: 44px; }
-}
 #moveDateSummary { font-size: 11px; color: var(--muted); margin-top: 20px; }
 .move-actions { display: flex; justify-content: flex-end; gap: 8px; }
 #confirmMoveTodoButton { padding: 7px 14px; border: 0; border-radius: 2px; background: var(--accent); color: white; font-size: 12px; }
