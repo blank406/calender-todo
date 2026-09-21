@@ -27,6 +27,13 @@ button, input { font: inherit; }
 #editTodoDialog button { min-width: 72px; min-height: 44px; }
 #saveEditTodoButton { padding: 10px 16px; border: 0; border-radius: 2px; background: var(--accent); color: white; }
 #editTodoError { color: #b44560; font-size: 13px; }
+#dDayDialog { width: min(300px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); overflow-y: auto; padding: 24px; text-align: center; background: white; color: var(--ink); border: 1px solid #e9e2f0; border-radius: 2px; }
+#dDayDialog::backdrop { background: #30234029; }
+#dDayTitle { margin: 0 0 18px; font-size: 15px; font-weight: 500; }
+#dDayTodoText { margin: 0 0 12px; overflow-wrap: anywhere; white-space: pre-wrap; }
+#dDayDate { font-size: 13px; color: #887596; }
+#dDayValue { margin: 16px 0; font-size: 36px; font-weight: 600; color: var(--accent); }
+#closeDDayButton { min-width: 80px; min-height: 44px; }
 button { cursor: pointer; }
 button { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }

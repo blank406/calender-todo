@@ -67,6 +67,7 @@ function renderTodoAccess() {
     byId('deleteMenuTodoButton').disabled = locked;
     byId('openMoveTodoButton').disabled = locked;
     byId('openCopyTodoButton').disabled = locked;
+    byId('openDDayButton').disabled = locked;
     byId('openEditTodoButton').disabled = locked;
     byId('editTodoInput').disabled = locked;
     byId('saveEditTodoButton').disabled = locked;
@@ -195,6 +196,7 @@ globalThis.calendarCategoryController = {
         closeCategoryForm();
         cancelBulkDelete();
         closeTodoMenu();
+        closeDDayDialog();
         closeTodoEditor();
         byId('categoryDialog').hidePopover();
         byId('moveTodoDialog').close();
@@ -408,6 +410,46 @@ function removeTodo(key, todo) {
 function closeTodoMenu() {
     byId('todoMenu').hidePopover();
 }
+
+function todoDDay(dateKey, today = new Date()) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+    if (!match) return null;
+    const [, year, month, day] = match.map(Number);
+    // Encode calendar components as UTC days; never parse YYYY-MM-DD as a local instant.
+    // Local midnight subtraction can span 23/25 hours during daylight-saving changes.
+    const target = new Date(0);
+    target.setUTCFullYear(year, month - 1, day);
+    if (target.getUTCFullYear() !== year || target.getUTCMonth() !== month - 1 || target.getUTCDate() !== day) return null;
+    const current = new Date(0);
+    current.setUTCFullYear(today.getFullYear(), today.getMonth(), today.getDate());
+    const difference = (target.getTime() - current.getTime()) / 86400000;
+    return { date: `${year}년 ${month}월 ${day}일`,
+        value: difference === 0 ? 'D-Day' : difference > 0 ? `D-${difference}` : `D+${-difference}` };
+}
+
+function clearDDayDialog() {
+    for (const id of ['dDayTodoText', 'dDayDate', 'dDayValue']) byId(id).textContent = '';
+}
+function closeDDayDialog() {
+    byId('dDayDialog').close();
+    clearDDayDialog();
+}
+byId('openDDayButton').addEventListener('click', () => {
+    if (!categoryUserId || !todoReady || todoLoading || todoBusy || editingTodo || !movingTodo ||
+        movingTodo.user_id !== categoryUserId || !todos[movingSource]?.includes(movingTodo)) return;
+    const todo = movingTodo;
+    const result = todoDDay(todo.todo_date);
+    closeTodoMenu();
+    movingTodo = null;
+    movingSource = null;
+    byId('dDayTodoText').textContent = todo.text;
+    byId('dDayDate').textContent = result?.date || '일정 날짜를 확인해주세요.';
+    byId('dDayValue').textContent = result?.value || '—';
+    byId('dDayDialog').showModal();
+    byId('closeDDayButton').focus();
+});
+byId('closeDDayButton').addEventListener('click', closeDDayDialog);
+byId('dDayDialog').addEventListener('close', clearDDayDialog);
 todoList.addEventListener('scroll', closeTodoMenu);
 globalThis.addEventListener?.('resize', closeTodoMenu);
 globalThis.addEventListener?.('scroll', closeTodoMenu);

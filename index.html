@@ -152,8 +152,17 @@
         <button type="button" id="openEditTodoButton">할 일 수정</button>
         <button type="button" id="openMoveTodoButton">다른 날로 옮기기</button>
         <button type="button" id="openCopyTodoButton">다른 날짜로 복사</button>
+        <button type="button" id="openDDayButton">D-Day 보기</button>
         <button type="button" id="deleteMenuTodoButton" class="danger">삭제</button>
     </div>
+
+    <dialog id="dDayDialog" aria-labelledby="dDayTitle" aria-describedby="dDayTodoText dDayDate dDayValue">
+        <h2 id="dDayTitle">D-Day 보기</h2>
+        <p id="dDayTodoText"></p>
+        <p id="dDayDate"></p>
+        <p id="dDayValue"></p>
+        <button type="button" id="closeDDayButton" autofocus>닫기</button>
+    </dialog>
 
     <dialog id="editTodoDialog" aria-labelledby="editTodoTitle">
         <form id="editTodoForm">
