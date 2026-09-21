@@ -236,7 +236,11 @@ function decorateDay(node, date) {
     node.classList.toggle('all-completed', items.length > 0 && items.every(t => t.completed));
     const categoryIds = new Set(items.map(todo => todo.categoryId).filter(id => id != null));
     const presentCategories = categories.filter(category => categoryIds.has(category.id));
-    const representative = presentCategories.reduce((best, category) =>
+    const incompleteCategoryIds = new Set(items
+        .filter(todo => !todo.completed && todo.categoryId != null)
+        .map(todo => todo.categoryId));
+    const candidates = presentCategories.filter(category => incompleteCategoryIds.has(category.id));
+    const representative = candidates.reduce((best, category) =>
         !best || compareCategories(category, best) < 0 ? category : best, null);
     node.classList.toggle('mixed-categories', presentCategories.length > 1);
     if (items.length) node.style.setProperty('--indicator-color', representative?.color || '#a29aaf');
