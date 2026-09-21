@@ -1,10 +1,12 @@
 const CACHE_PREFIX = 'calendar-todo-';
-const CACHE_NAME = `${CACHE_PREFIX}v18`;
+const CACHE_NAME = `${CACHE_PREFIX}v19`;
 const APP_SHELL = [
     './',
     './index.html',
     './style.css',
     './script.js',
+    './style.css?v=19',
+    './script.js?v=19',
     './supabase.js',
     './font-settings.js',
     './pwa.js',
@@ -44,9 +46,10 @@ self.addEventListener('fetch', event => {
     // Supabase and every other cross-origin request must remain network-only.
     if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
-    if (request.mode === 'navigate') {
+    // Fresh HTML must not run with cached old event handlers or styles.
+    if (request.mode === 'navigate' || ['script', 'style'].includes(request.destination)) {
         event.respondWith(
-            fetch(request)
+            fetch(request, { cache: 'no-cache' })
                 .then(response => {
                     if (response.ok) {
                         const copy = response.clone();
@@ -54,11 +57,14 @@ self.addEventListener('fetch', event => {
                     }
                     return response;
                 })
-                .catch(async () => (
-                    await caches.match(request) ||
-                    await caches.match('./index.html') ||
-                    await caches.match('./')
-                ))
+                .catch(async () => {
+                    const cached = await caches.match(request);
+                    if (cached) return cached;
+                    if (request.mode === 'navigate') {
+                        return await caches.match('./index.html') || await caches.match('./');
+                    }
+                    return Response.error();
+                })
         );
         return;
     }
