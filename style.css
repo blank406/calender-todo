@@ -110,6 +110,15 @@ button:disabled { cursor: default; opacity: .45; }
 #closeCategoriesButton { font-size: 22px; }
 .category-management-row { display: flex; align-items: center; gap: 9px; min-height: 38px; }
 .category-management-name { flex: 1; font-size: 13px; overflow-wrap: anywhere; min-width: 0; }
+.category-section .category-drag-handle { min-width: 44px; min-height: 44px; padding: 6px; flex-shrink: 0; font-size: 20px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.category-section .category-drag-handle:disabled { opacity: .3; cursor: default; background: transparent; }
+.category-drag-handle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.category-management-row { position: relative; }
+.category-management-row.category-dragging { opacity: .5; background: #f5f0fa; outline: 1px solid var(--accent); }
+.category-dragging .category-drag-handle { cursor: grabbing; }
+.category-drop-before::before, .category-drop-after::after { content: ''; position: absolute; left: 0; right: 0; height: 2px; background: var(--accent); pointer-events: none; }
+.category-drop-before::before { top: -1px; }
+.category-drop-after::after { bottom: -1px; }
 #addCategoryButton { margin-top: 12px; color: var(--accent); }
 #categoryForm { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; font-size: 12px; }
 #categoryName { display: block; width: 100%; margin: 10px 0 15px; padding: 9px; border: 1px solid #e8e0ee; border-radius: 2px; color: var(--ink); }

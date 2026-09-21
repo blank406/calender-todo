@@ -28,10 +28,15 @@ let categoryLoading = false;
 let categoryReady = false;
 let categoryBusy = false;
 let categoryVersion = 0;
+let categoryDrag = null;
 let todoLoading = false;
 let todoReady = false;
 let todoBusy = false;
-const CATEGORY_COLUMNS = 'id,name,color,user_id,created_at';
+const CATEGORY_COLUMNS = 'id,name,color,user_id,created_at,sort_order';
+function compareCategories(a, b) {
+    return (a.sort_order ?? Infinity) - (b.sort_order ?? Infinity) ||
+        String(a.created_at).localeCompare(String(b.created_at)) || String(a.id).localeCompare(String(b.id));
+}
 const TODO_COLUMNS = 'id,todo_date,text,completed,category_id,user_id,created_at';
 
 function categoryStatus(message, retry = false) {
@@ -97,11 +102,12 @@ async function loadCategories() {
     try {
         const { data, error } = await categoryClient.from('categories')
             .select(CATEGORY_COLUMNS).eq('user_id', userId)
+            .order('sort_order', { ascending: true, nullsFirst: false })
             .order('created_at', { ascending: true }).order('id', { ascending: true });
         if (version !== categoryVersion) return;
         if (error) throw error;
         if (!Array.isArray(data) || data.some(row => row.user_id !== userId)) throw new Error('Invalid category ownership');
-        categories = data;
+        categories = data.sort(compareCategories);
         categoryReady = true;
         categoryStatus(categories.length ? '' : '아직 카테고리가 없습니다. + 버튼으로 추가하세요.');
     } catch (error) {
@@ -228,10 +234,13 @@ function decorateDay(node, date) {
     node.classList.toggle('today', formatDateKey(date) === formatDateKey(new Date()));
     node.classList.toggle('has-todos', items.length > 0);
     node.classList.toggle('all-completed', items.length > 0 && items.every(t => t.completed));
-    const counts = categories.map(c => ({ ...c, count: items.filter(t => t.categoryId === c.id).length }));
-    const representative = counts.reduce((best, c) => c.count > (best?.count || 0) ? c : best, null);
-    node.classList.toggle('mixed-categories', counts.filter(c => c.count > 0).length > 1);
+    const categoryIds = new Set(items.map(todo => todo.categoryId).filter(id => id != null));
+    const presentCategories = categories.filter(category => categoryIds.has(category.id));
+    const representative = presentCategories.reduce((best, category) =>
+        !best || compareCategories(category, best) < 0 ? category : best, null);
+    node.classList.toggle('mixed-categories', presentCategories.length > 1);
     if (items.length) node.style.setProperty('--indicator-color', representative?.color || '#a29aaf');
+    else node.style.removeProperty('--indicator-color');
 }
 function buildCalendar(container, year, month, selection, select) {
     container.replaceChildren();
@@ -291,6 +300,7 @@ function categoryDot(category) {
     return dot;
 }
 function renderCategories() {
+    cancelCategoryDrag();
     if (!categories.some(category => category.id === activeCategoryId)) {
         activeCategoryId = categories[0]?.id ?? null;
     }
@@ -315,7 +325,22 @@ function renderCategories() {
         list.appendChild(row);
         if (category.id !== null) {
             const managementRow = element('div', 'category-management-row');
-            managementRow.append(categoryDot(category), element('span', 'category-management-name', category.name),
+            const handle = button('category-drag-handle', '⋮⋮', () => {}, `${category.name} 순서 변경: 드래그 또는 위아래 방향키`);
+            handle.disabled = !categoryReady || categoryBusy || categoryLoading || categories.length < 2;
+            handle.title = '드래그하여 순서 변경 (키보드: ↑ / ↓)';
+            handle.addEventListener('pointerdown', event => startCategoryDrag(event, category.id, managementRow));
+            handle.addEventListener('pointermove', updateCategoryDrag);
+            handle.addEventListener('pointerup', finishCategoryDrag);
+            handle.addEventListener('pointercancel', cancelCategoryPointer);
+            handle.addEventListener('lostpointercapture', cancelCategoryPointer);
+            handle.addEventListener('keydown', event => {
+                if (event.key === 'Escape') { cancelCategoryDrag(); return; }
+                if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+                event.preventDefault();
+                const index = categories.findIndex(item => item.id === category.id);
+                return reorderCategory(category.id, index + (event.key === 'ArrowUp' ? -1 : 1));
+            });
+            managementRow.append(handle, categoryDot(category), element('span', 'category-management-name', category.name),
                 button('category-edit', '편집', () => openCategoryForm(category), `${category.name} 편집`));
             management.appendChild(managementRow);
         }
@@ -525,6 +550,153 @@ function renderPalette() {
         byId('categoryPalette').appendChild(swatch);
     }
 }
+function cancelCategoryDrag() {
+    const drag = categoryDrag;
+    if (!drag) return;
+    categoryDrag = null;
+    cancelAnimationFrame(drag.frame);
+    for (const row of drag.rows) {
+        row.classList.remove('category-dragging', 'category-drop-before', 'category-drop-after');
+    }
+    if (drag.handle.hasPointerCapture(drag.pointerId)) drag.handle.releasePointerCapture(drag.pointerId);
+}
+
+function cancelCategoryPointer(event) {
+    if (event.pointerId === categoryDrag?.pointerId) cancelCategoryDrag();
+}
+
+function startCategoryDrag(event, id, row) {
+    if (event.button !== 0 || event.isPrimary === false || categoryDrag || categoryBusy || categoryLoading ||
+        !categoryUserId || !categoryReady || categories.length < 2) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const handle = event.currentTarget;
+    handle.focus();
+    handle.setPointerCapture(event.pointerId);
+    categoryDrag = { id, row, handle, pointerId: event.pointerId, startY: event.clientY,
+        y: event.clientY, x: event.clientX, active: false, frame: 0,
+        rows: Array.from(byId('categoryManagementList').children), target: -1 };
+}
+
+function markCategoryDrop() {
+    const drag = categoryDrag;
+    if (!drag?.active) return;
+    const others = drag.rows.filter(row => row !== drag.row);
+    const bounds = byId('categoryDialog').getBoundingClientRect();
+    const inside = drag.x >= bounds.left && drag.x <= bounds.right && drag.y >= bounds.top && drag.y <= bounds.bottom;
+    for (const row of drag.rows) row.classList.remove('category-drop-before', 'category-drop-after');
+    drag.target = -1;
+    if (!inside) return;
+    const next = others.findIndex(row => {
+        const rect = row.getBoundingClientRect();
+        return drag.y < (rect.top + rect.bottom) / 2;
+    });
+    drag.target = next < 0 ? others.length : next;
+    if (next < 0) others.at(-1)?.classList.add('category-drop-after');
+    else others[next].classList.add('category-drop-before');
+}
+
+function scrollCategoryDrag() {
+    const drag = categoryDrag;
+    if (!drag?.active) return;
+    const dialog = byId('categoryDialog');
+    const rect = dialog.getBoundingClientRect();
+    if (drag.x >= rect.left && drag.x <= rect.right && drag.y >= rect.top && drag.y <= rect.bottom) {
+        if (drag.y < rect.top + 44) dialog.scrollTop -= 6;
+        else if (drag.y > rect.bottom - 44) dialog.scrollTop += 6;
+    }
+    markCategoryDrop();
+    drag.frame = requestAnimationFrame(scrollCategoryDrag);
+}
+
+function updateCategoryDrag(event) {
+    const drag = categoryDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    drag.x = event.clientX;
+    drag.y = event.clientY;
+    if (!drag.active && Math.abs(drag.y - drag.startY) >= 6) {
+        drag.active = true;
+        drag.row.classList.add('category-dragging');
+        drag.frame = requestAnimationFrame(scrollCategoryDrag);
+    }
+    markCategoryDrop();
+}
+
+function finishCategoryDrag(event) {
+    const drag = categoryDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    updateCategoryDrag(event);
+    const { id, target, active } = drag;
+    cancelCategoryDrag();
+    if (active && target >= 0) return reorderCategory(id, target);
+}
+
+async function reorderCategory(id, target) {
+    if (!categoryUserId || !categoryReady || categoryLoading || categoryBusy) return;
+    const index = categories.findIndex(category => category.id === id);
+    if (index < 0 || target < 0 || target >= categories.length || target === index) return;
+    const previous = categories;
+    const ordered = [...categories];
+    ordered.splice(target, 0, ordered.splice(index, 1)[0]);
+    const version = categoryVersion;
+    const userId = categoryUserId;
+    const client = categoryClient;
+    const attempted = [];
+    categoryBusy = true;
+    categories = ordered.map((category, sort_order) => ({ ...category, sort_order }));
+    categoryStatus('');
+    refreshCategoryUI();
+    try {
+        for (const [sort_order, category] of ordered.entries()) {
+            if (version !== categoryVersion) return;
+            attempted.push({ id: category.id, sort_order });
+            const { data, error } = await client.from('categories').update({ sort_order })
+                .eq('id', category.id).eq('user_id', userId).select(CATEGORY_COLUMNS).single();
+            if (version !== categoryVersion) return;
+            if (error) throw error;
+            if (!data || data.user_id !== userId || data.sort_order !== sort_order) throw new Error('Invalid category update');
+        }
+        categoryStatus('');
+    } catch (error) {
+        if (version !== categoryVersion) return;
+        // Existing schema needs no new RPC. Undo attempted writes if any request fails.
+        // Match the value we wrote to avoid overwriting an intervening change from another device.
+        let restored = true;
+        for (const attempt of attempted) {
+            if (version !== categoryVersion) return;
+            try {
+                const original = previous.find(category => category.id === attempt.id);
+                const result = await client.from('categories').update({ sort_order: original.sort_order ?? null })
+                    .eq('id', attempt.id).eq('user_id', userId).eq('sort_order', attempt.sort_order).select('id');
+                if (result.error) restored = false;
+            } catch { restored = false; }
+        }
+        if (version !== categoryVersion) return;
+        categories = previous;
+        // Re-read even after rollback: a lost response or a concurrent edit can leave different server data.
+        try {
+            const result = await client.from('categories').select(CATEGORY_COLUMNS).eq('user_id', userId)
+                .order('sort_order', { ascending: true, nullsFirst: false })
+                .order('created_at', { ascending: true }).order('id', { ascending: true });
+            if (version !== categoryVersion) return;
+            if (result.error || !Array.isArray(result.data) || result.data.some(row => row.user_id !== userId)) throw new Error('Reload failed');
+            categories = result.data.sort(compareCategories);
+        } catch { if (version === categoryVersion) categoryReady = false; }
+        if (version === categoryVersion) categoryStatus(restored
+            ? '순서 저장에 실패했습니다. 다시 불러온 후 재시도해주세요.'
+            : '일부 순서를 저장하지 못했습니다. 다시 불러와 순서를 확인해주세요.', true);
+    } finally {
+        if (version === categoryVersion) {
+            categoryBusy = false;
+            refreshCategoryUI();
+            const position = categories.findIndex(category => category.id === id);
+            byId('categoryManagementList').children[position]?.children[0]?.focus();
+        }
+    }
+}
+
 function openCategoryForm(category) {
     if (!categoryUserId || !categoryReady || categoryLoading || categoryBusy) return;
     editingCategoryId = category?.id || null;
@@ -563,14 +735,27 @@ byId('categoryForm').addEventListener('submit', async event => {
     try {
         const query = id
             ? categoryClient.from('categories').update({ name, color }).eq('id', id).eq('user_id', userId)
-            : categoryClient.from('categories').insert({ name, color, user_id: userId });
+            : categoryClient.from('categories').insert({ name, color, user_id: userId,
+                sort_order: categories.reduce((max, category) => Math.max(max, category.sort_order ?? -1), -1) + 1 });
         const { data, error } = await query.select(CATEGORY_COLUMNS).single();
         if (version !== categoryVersion) return;
         if (error) throw error;
         if (!data || data.user_id !== userId) throw new Error('Invalid category ownership');
         if (id) categories = categories.map(category => category.id === id ? data : category);
-        else categories.push(data);
-        categories.sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)) || String(a.id).localeCompare(String(b.id)));
+        else {
+            // The insert trigger also repairs legacy orders and handles concurrent inserts.
+            // Close the form first so a failed reload cannot accidentally duplicate the insert.
+            categories.push(data);
+            closeCategoryForm();
+            const result = await categoryClient.from('categories').select(CATEGORY_COLUMNS).eq('user_id', userId)
+                .order('sort_order', { ascending: true, nullsFirst: false })
+                .order('created_at', { ascending: true }).order('id', { ascending: true });
+            if (version !== categoryVersion) return;
+            if (result.error) throw result.error;
+            if (!Array.isArray(result.data) || result.data.some(row => row.user_id !== userId)) throw new Error('Invalid category ownership');
+            categories = result.data;
+        }
+        categories.sort(compareCategories);
         closeCategoryForm();
         categoryStatus('');
     } catch (error) {
@@ -596,7 +781,7 @@ byId('closeCategoriesButton').addEventListener('click', () => {
     byId('manageCategoriesButton').focus();
 });
 byId('categoryDialog').addEventListener('toggle', event => {
-    if (event.newState === 'closed') closeCategoryForm();
+    if (event.newState === 'closed') { cancelCategoryDrag(); closeCategoryForm(); }
 });
 byId('deleteCategoryButton').addEventListener('click', () => {
     if (editingCategoryId) byId('categoryDeleteConfirm').hidden = false;

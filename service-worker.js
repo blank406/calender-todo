@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'calendar-todo-';
-const CACHE_NAME = `${CACHE_PREFIX}v13`;
+const CACHE_NAME = `${CACHE_PREFIX}v16`;
 const APP_SHELL = [
     './',
     './index.html',
