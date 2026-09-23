@@ -232,7 +232,10 @@ function formatDateKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 function decorateDay(node, date) {
-    const items = categoryUserId ? todos[formatDateKey(date)] || [] : [];
+    const dateKey = formatDateKey(date);
+    const items = categoryUserId ? todos[dateKey] || [] : [];
+    // Completed Todos still count: holiday color returns only after all are deleted.
+    node.classList.toggle('holiday', items.length === 0 && !!getKoreanHolidayName(dateKey));
     node.classList.toggle('today', formatDateKey(date) === formatDateKey(new Date()));
     node.classList.toggle('has-todos', items.length > 0);
     node.classList.toggle('all-completed', items.length > 0 && items.every(t => t.completed));

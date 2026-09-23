@@ -1,12 +1,14 @@
 const CACHE_PREFIX = 'calendar-todo-';
-const CACHE_NAME = `${CACHE_PREFIX}v19`;
+const CACHE_NAME = `${CACHE_PREFIX}v20`;
 const APP_SHELL = [
     './',
     './index.html',
     './style.css',
     './script.js',
-    './style.css?v=19',
-    './script.js?v=19',
+    './style.css?v=20',
+    './script.js?v=20',
+    './holidays.js',
+    './holidays.js?v=20',
     './supabase.js',
     './font-settings.js',
     './pwa.js',

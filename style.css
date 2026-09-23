@@ -62,6 +62,9 @@ button:disabled { cursor: default; opacity: .45; }
 .date { position: relative; display: grid; place-items: center; width: 38px; height: 38px; max-width: 100%; aspect-ratio: 1; justify-self: center; padding: 0; border: 1px solid transparent; border-radius: 50%; background: transparent; color: #77717f; font-size: 12px; transition: box-shadow .15s, background .15s; }
 .date:hover { background: #eeeaf7; }
 .date.today { font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+/* Color only: retain selected outline, today underline and existing hover. */
+#calendar .date.holiday:not(.has-todos):not(.all-completed),
+#moveCalendar .date.holiday:not(.has-todos):not(.all-completed) { color: #c96f78; }
 .date.has-todos { background: color-mix(in srgb, var(--indicator-color) 29%, white); color: color-mix(in srgb, var(--indicator-color) 55%, #393345); }
 .date.has-todos:hover { background: color-mix(in srgb, var(--indicator-color) 42%, white); }
 .date.selected { outline: 1.5px solid var(--accent); outline-offset: 4px; color: #6552b3; }
